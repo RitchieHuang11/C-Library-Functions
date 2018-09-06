@@ -45,6 +45,11 @@ int str_cmp_n(char* s, char* t, unsigned int n);
 void* mem_set(void* ptr, int value, unsigned int num);
 //将source的前num的byte拷贝到dest中, mem_cpy等价于memmove
 void* mem_cpy(void* dest, const void* source, unsigned int num );
+//从stream中读取num-1个字符串到str中
+char* fget_s (char* str, int num, FILE* stream);
+//将str写入到stream中
+int fput_s (const char* str, FILE* stream);
+
 //打印
 int print_f(const char* fmt, ...);
 
@@ -67,60 +72,88 @@ struct {
 
 
 int main(){
-	char dest[20];
-	char source[20] = "1234567";
-	char s[] = "89";
+	// char dest[20];
+	// char source[20] = "1234567";
+	// char s[] = "89";
 	
-	print_f("dest:%s\n", str_cpy(dest, source));
-	print_f("len of dest:%d\n", str_len(dest));
-	printf("dest+s,n:%s\n", str_cat_n(dest, s, 5));
-	print_f("dest+s:%s\n", str_cat(dest, s));
-	print_f("reverse:%s\n", reverse(dest));
-	print_f("copy to dest:%s\n", str_cpy(dest, source));
-	print_f("copy to dest, n:%s\n", str_cpy_n(dest, source, 4));
-	print_f("cmp: %d\n", str_cmp(dest, source));
-	print_f("cmp,n: %d\n", str_cmp_n(dest, source, 4));
+	// print_f("dest:%s\n", str_cpy(dest, source));
+	// print_f("len of dest:%d\n", str_len(dest));
+	// printf("dest+s,n:%s\n", str_cat_n(dest, s, 5));
+	// print_f("dest+s:%s\n", str_cat(dest, s));
+	// print_f("reverse:%s\n", reverse(dest));
+	// print_f("copy to dest:%s\n", str_cpy(dest, source));
+	// print_f("copy to dest, n:%s\n", str_cpy_n(dest, source, 4));
+	// print_f("cmp: %d\n", str_cmp(dest, source));
+	// print_f("cmp,n: %d\n", str_cmp_n(dest, source, 4));
 
-	print_f("%.6f\n", 15.666);
-	print_f("%d\n", 16);
-	print_f("%lld\n", 65000000000000000L);
-	print_f("%c\n", 'c');
-	print_f("%s\n", "12323");
-	print_f("%x\n", 16);	
-	print_f("%lo\n", 65000000000000000L);
-	print_f("%u\n", 12);
-	printf("%d%%\n", 15);
+	// print_f("%.6f\n", 15.666);
+	// print_f("%d\n", 16);
+	// print_f("%lld\n", 65000000000000000L);
+	// print_f("%c\n", 'c');
+	// print_f("%s\n", "12323");
+	// print_f("%x\n", 16);	
+	// print_f("%lo\n", 65000000000000000L);
+	// print_f("%u\n", 12);
+	// printf("%d%%\n", 15);
 
-	char str[] = "almost every programmer should know memset!";
-	mem_set(str, '0' ,6);
-	print_f("%s\n", str);
+	// char str[] = "almost every programmer should know memset!";
+	// mem_set(str, '0' ,6);
+	// print_f("%s\n", str);
 
-	char myname[] = "Pierre de Fermat";
-	/* using memcpy to copy string: */
-	mem_cpy ( person.name, myname, strlen(myname)+1 );
-	person.age = 46;
+	// char myname[] = "Pierre de Fermat";
+	// /* using memcpy to copy string: */
+	// mem_cpy ( person.name, myname, strlen(myname)+1 );
+	// person.age = 46;
 
-	/* using memcpy to copy structure: */
-	mem_cpy ( &person_copy, &person, sizeof(person) );
-	print_f ("person_copy: %s, %d \n", person_copy.name, person_copy.age );
+	// /* using memcpy to copy structure: */
+	// mem_cpy ( &person_copy, &person, sizeof(person) );
+	// print_f ("person_copy: %s, %d \n", person_copy.name, person_copy.age );
 
-	//地址重合检测
-	char buf[100] = "1234567";
-	mem_cpy(buf+2, buf, 7);
-	print_f("%s\n", buf+2);
-	print_f("%s\n", buf);
+	// //地址重合检测
+	// char buf[100] = "1234567";
+	// mem_cpy(buf+2, buf, 7);
+	// print_f("%s\n", buf+2);
+	// print_f("%s\n", buf);
 
-	char buf1[100] = "1234567";
-	str_cpy(buf1+2, buf1);
-	print_f("%s\n", buf1+2);
-	print_f("%s\n", buf1);
+	// char buf1[100] = "1234567";
+	// str_cpy(buf1+2, buf1);
+	// print_f("%s\n", buf1+2);
+	// print_f("%s\n", buf1);
 
-	char buf2[100] = "1234567";
-	str_cpy_n(buf2+2, buf2, str_len(buf2));
-	print_f("%s\n", buf2+2);
-	print_f("%s\n", buf2);	
+	// char buf2[100] = "1234567";
+	// str_cpy_n(buf2+2, buf2, str_len(buf2));
+	// print_f("%s\n", buf2+2);
+	// print_f("%s\n", buf2);	
+
+	// char str[20];
+	// print_f("%s\n", fget_s(str, 10, stdin));
+	// fput_s(str, stdout);
+	
+
+}
 
 
+int fput_s(const char* str, FILE* stream){
+	assert(str);
+	int c;
+	while(c = *str++) putc(c, stream);
+	return ferror(stream) ? EOF : 0;
+}
+
+
+//注意第num用于放'\0'
+char* fget_s (char* str, int num, FILE* stream){
+	assert(str), assert(num > 0);
+	register int c; 
+	register char* cs;
+	cs = str;
+
+	while(--num > 0 && (c = getc(stream)) != EOF)
+		if((*cs++ = c) == '\n') break;
+
+	*cs = '\0';
+	//考虑程序运行,无输入直接退出或者无输入字符情况
+	return (c == EOF || cs == str) ? NULL : str; 
 }
 
 
@@ -242,6 +275,7 @@ int print_f(const char* fmt, ...){
 }
 
 void* mem_cpy(void* dest, const void* source, unsigned int num){
+	assert(dest), assert(source);
 	char* cdest = (char*)dest;
 	char* csource = (char*)source;
 	if(cdest > csource && cdest < csource+num){  //目的地址和源地址有重合
