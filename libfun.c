@@ -128,7 +128,7 @@ int main(){
 	// char str[20];
 	// print_f("%s\n", fget_s(str, 10, stdin));
 	// fput_s(str, stdout);
-	
+
 
 }
 
@@ -276,6 +276,7 @@ int print_f(const char* fmt, ...){
 
 void* mem_cpy(void* dest, const void* source, unsigned int num){
 	assert(dest), assert(source);
+	if(dest == source) return dest;
 	char* cdest = (char*)dest;
 	char* csource = (char*)source;
 	if(cdest > csource && cdest < csource+num){  //目的地址和源地址有重合
