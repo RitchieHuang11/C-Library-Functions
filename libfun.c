@@ -8,10 +8,6 @@
 //get_line
 #define MAXLINE		1000
 
-/*
-	下面函数,如果出现错误就会返回一个小于0的值
-*/
-int error = 1; 
 
 //统计屏幕输入的行数, 单词数, 以及字符数
 void word_count();
